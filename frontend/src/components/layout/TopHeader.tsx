@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Sun, Moon, Menu, Sparkles, AlertCircle } from "lucide-react";
+import { Sun, Moon, Menu, Sparkles, AlertCircle, Download } from "lucide-react";
 import { useTheme } from "../../hooks/useTheme";
+import { usePWAInstall } from "../../hooks/usePWAInstall";
 import { api } from "../../api/client";
 import type { SystemStatus } from "../../types";
 
@@ -11,6 +12,7 @@ interface TopHeaderProps {
 
 export function TopHeader({ onToggleMobile }: TopHeaderProps) {
   const { theme, toggleTheme } = useTheme();
+  const { isInstalled, promptInstall } = usePWAInstall();
   const location = useLocation();
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
 
@@ -61,6 +63,18 @@ export function TopHeader({ onToggleMobile }: TopHeaderProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* PWA Install Action Button */}
+        {!isInstalled && (
+          <button
+            onClick={() => promptInstall()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-sm transition-all active:scale-95 cursor-pointer"
+            title="Install AutoApply AI App on Android / Device"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Install App</span>
+          </button>
+        )}
+
         {/* System / AI Status Indicator Pill */}
         <Link 
           to="/settings"
@@ -104,3 +118,4 @@ export function TopHeader({ onToggleMobile }: TopHeaderProps) {
     </header>
   );
 }
+

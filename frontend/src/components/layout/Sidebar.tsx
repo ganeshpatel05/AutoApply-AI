@@ -120,6 +120,29 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
           </div>
         ))}
       </div>
+
+      {/* PWA Mobile App Install Widget in Sidebar */}
+      <div className="p-3 border-t border-[var(--border-color)] bg-[var(--bg-primary)]/50">
+        <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-900/40 via-purple-900/30 to-slate-900/50 border border-indigo-500/20 text-xs">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-bold text-[var(--text-primary)]">Android & Mobile Ready</span>
+          </div>
+          <p className="text-[11px] text-[var(--text-muted)] leading-tight mb-2">
+            Install AutoApply AI on your mobile home screen for 1-tap app access.
+          </p>
+          <button
+            onClick={() => {
+              if (onCloseMobile) onCloseMobile();
+              window.dispatchEvent(new CustomEvent("trigger-pwa-install"));
+            }}
+            className="w-full py-1.5 px-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <span>📱 Get Mobile App</span>
+          </button>
+        </div>
+      </div>
     </aside>
   );
 }
+

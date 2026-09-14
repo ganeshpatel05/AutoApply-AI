@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
+import { registerServiceWorker } from './registerServiceWorker.ts'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -11,4 +12,8 @@ createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </StrictMode>,
 )
+
+// Register PWA Service Worker for offline support and installation capability on Android/iOS
+registerServiceWorker();
+
 

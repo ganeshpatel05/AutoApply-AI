@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { TopHeader } from "./TopHeader";
+import { PWAInstallPrompt } from "../pwa/PWAInstallPrompt";
+import { OfflineNotifier } from "../pwa/OfflineNotifier";
 
 export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,6 +26,11 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* PWA Features & Offline Status Notifier */}
+      <PWAInstallPrompt />
+      <OfflineNotifier />
     </div>
   );
 }
+
