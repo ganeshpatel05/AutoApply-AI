@@ -137,19 +137,30 @@ class ResumeParser:
         return list(dict.fromkeys(found))[:30]  # Deduplicate, max 30
 
     def _extract_experience(self, text: str) -> str:
-        """Extract experience section text."""
-        pattern = r"(?:work\s+)?experience\s*[:\-]?\s*(.*?)(?=education|skills|projects|certificates|\Z)"
-        match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-        if match:
-            return match.group(1).strip()[:800]
-        return ""
+        """Extract experience and key project section text."""
+        patterns = [
+            r"(?:professional\s+|work\s+|employment\s+|career\s+|relevant\s+)?(?:experience|history|employment)\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|skills|projects|certifications|certificates|honors|publications|languages)|\Z)",
+            r"(?:key\s+)?projects?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|skills|certifications|certificates|honors|languages)|\Z)"
+        ]
+        extracted = []
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match and match.group(1).strip():
+                extracted.append(match.group(1).strip())
+        
+        if extracted:
+            combined = "\n\n".join(extracted)
+            return combined[:3000]
+        
+        # Fallback: return clean text excerpt if no section header is matched
+        return text[:2000].strip()
 
     def _extract_education(self, text: str) -> str:
         """Extract education section text."""
-        pattern = r"education\s*[:\-]?\s*(.*?)(?=experience|skills|projects|certificates|\Z)"
+        pattern = r"(?:education|academic\s+background|academic\s+qualifications|qualifications|education\s+&\s+training)\s*[:\-]?\s*(.*?)(?=\n\s*(?:experience|skills|projects|certifications|certificates|honors|publications|languages|\Z))"
         match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
         if match:
-            return match.group(1).strip()[:500]
+            return match.group(1).strip()[:1500]
         return ""
 
     def _extract_linkedin(self, text: str) -> str:
@@ -165,11 +176,20 @@ class ResumeParser:
         return ", ".join(resume_data.get("skills", []))
 
     def resume_summary(self, resume_data: dict) -> str:
-        """Create a short summary string of the resume for LLM input."""
-        return f"""
-Name: {resume_data.get('name', 'Candidate')}
+        """Create a detailed summary string of the resume for LLM input."""
+        exp = resume_data.get('experience', '')
+        edu = resume_data.get('education', '')
+        raw = resume_data.get('raw_text', '')
+        if not exp and raw:
+            exp = raw[:1500]
+        return f"""Candidate Name: {resume_data.get('name', 'Candidate')}
 Email: {resume_data.get('email', 'N/A')}
-Skills: {self.get_skills_text(resume_data)}
-Experience: {resume_data.get('experience', '')[:300]}
-Education: {resume_data.get('education', '')[:200]}
-""".strip()
+Phone: {resume_data.get('phone', 'N/A')}
+Technical & Core Skills: {self.get_skills_text(resume_data)}
+
+Work & Project Experience:
+{exp[:2500]}
+
+Education & Background:
+{edu[:1000]}""".strip()
+

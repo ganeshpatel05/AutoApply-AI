@@ -3,14 +3,16 @@ Extracts and structures resume information from PDF or plain text.
 """
 
 from tools.resume_parser import ResumeParser
+from tools.ollama_client import OllamaClient
 from database.db_manager import DatabaseManager
 
 
 class ResumeAgent:
-    """Agent responsible for parsing resumes and storing active profiles."""
+    """Agent responsible for parsing resumes, scoring content, and providing AI analysis."""
 
     def __init__(self, db: DatabaseManager = None):
         self.parser = ResumeParser()
+        self.ollama = OllamaClient()
         self.db = db or DatabaseManager()
 
     def process_pdf(self, pdf_path: str) -> dict:
@@ -60,19 +62,21 @@ class ResumeAgent:
         return self.db.get_active_resume()
 
     def score_resume(self, data: dict) -> dict:
-        """Calculate a detailed resume quality score based on extracted fields."""
+        """Calculate a detailed resume quality score and generate AI-driven feedback."""
         content_score = 0
         skills_score = 0
         experience_score = 0
         education_score = 0
         completeness_score = 0
 
-        # Content (Word Count)
-        wc = data.get("word_count", 0)
-        if wc > 600: content_score = 95
-        elif wc > 300: content_score = 80
+        raw_text = data.get("raw_text", "")
+        wc = data.get("word_count", len(raw_text.split()) if raw_text else 0)
+
+        # Content (Word Count & Depth)
+        if wc > 500: content_score = 95
+        elif wc > 250: content_score = 80
         elif wc > 100: content_score = 50
-        else: content_score = 20
+        else: content_score = 25
 
         # Skills
         skills = data.get("skills", [])
@@ -86,11 +90,13 @@ class ResumeAgent:
         if len(exp) > 300: experience_score = 95
         elif len(exp) > 100: experience_score = 70
         elif len(exp) > 20: experience_score = 40
+        else: experience_score = 20
 
         # Education
         edu = data.get("education", "")
         if len(edu) > 50: education_score = 95
-        elif len(edu) > 10: education_score = 60
+        elif len(edu) > 10: education_score = 65
+        else: education_score = 30
 
         # Completeness (Contact Info)
         fields = ["email", "phone", "linkedin", "github"]
@@ -100,18 +106,34 @@ class ResumeAgent:
         # Weighted Total
         total = int((content_score * 0.15) + (skills_score * 0.3) + (experience_score * 0.3) + (education_score * 0.15) + (completeness_score * 0.1))
 
-        # Generate Actionable Suggestions
+        # Actionable Suggestions (AI-powered with fallback)
         suggestions = []
-        if len(skills) < 10:
-            suggestions.append("Add more specific technical frameworks & tools to your Skills section.")
-        if "metrics" not in data.get("raw_text", "").lower() and "%" not in data.get("raw_text", ""):
-            suggestions.append("Include measurable impact and metrics (e.g. 'Improved efficiency by 30%') in project descriptions.")
-        if not data.get("linkedin"):
-            suggestions.append("Add a valid LinkedIn profile URL to boost profile credibility.")
-        if not data.get("github"):
-            suggestions.append("Add a GitHub profile link to demonstrate code repositories.")
-        if len(exp) < 150:
-            suggestions.append("Expand work experience and key technical project details.")
+        if self.ollama.is_available() and raw_text:
+            ai_res = self.ollama.generate(
+                prompt=f"""Analyze the following resume content and list 3 concise, highly actionable bullet points to improve its ATS match rate, impact metrics, and technical presentation.
+
+Resume Content:
+{raw_text[:2500]}
+
+Format strictly as bullet points starting with '- '. Keep each suggestion under 20 words.""",
+                system_prompt="You are an expert ATS resume consultant."
+            )
+            if ai_res["success"] and ai_res["text"]:
+                lines = [l.strip("-•* ").strip() for l in ai_res["text"].split("\n") if l.strip()]
+                suggestions = [l for l in lines if len(l) > 10][:4]
+
+        # Rule-based fallback suggestions if AI returned no results or is unavailable
+        if not suggestions:
+            if len(skills) < 10:
+                suggestions.append("Add more specific technical frameworks & tools to your Skills section.")
+            if "metrics" not in raw_text.lower() and "%" not in raw_text:
+                suggestions.append("Include measurable impact and metrics (e.g. 'Improved efficiency by 30%') in project descriptions.")
+            if not data.get("linkedin"):
+                suggestions.append("Add a valid LinkedIn profile URL to boost profile credibility.")
+            if not data.get("github"):
+                suggestions.append("Add a GitHub profile link to demonstrate code repositories.")
+            if len(exp) < 150:
+                suggestions.append("Expand work experience and key technical project details.")
 
         if not suggestions:
             suggestions.append("Great resume profile! Keep your project achievements updated with recent tech stacks.")
@@ -125,5 +147,6 @@ class ResumeAgent:
             "suggestions": suggestions,
             "total": total
         }
+
 
 

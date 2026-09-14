@@ -26,12 +26,17 @@ frontend/dist-ssr/
 
 # Databases & Uploads
 *.db
+*.db-shm
+*.db-wal
 *.sqlite3
 database/*.db
+database/*.db-shm
+database/*.db-wal
 uploads/resumes/*
 uploads/cover_letters/*
 !uploads/resumes/.gitkeep
 !uploads/cover_letters/.gitkeep
+
 
 # Zip / Archives
 *.zip
