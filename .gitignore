@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+.pytest_cache/
+
+# Node / React Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+
+# Databases & Uploads
+*.db
+*.sqlite3
+database/*.db
+uploads/resumes/*
+uploads/cover_letters/*
+!uploads/resumes/.gitkeep
+!uploads/cover_letters/.gitkeep
+
+# Zip / Archives
+*.zip
+AutoApply-AI.zip
+
+# Logs
+logs/
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
