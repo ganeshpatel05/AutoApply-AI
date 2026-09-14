@@ -101,13 +101,13 @@ export function AiAgents() {
       {/* Top Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-xl font-bold text-[var(--text-primary)]">Multi-Agent Command Center</h2>
+          <h2 className="text-xl font-extrabold text-[var(--text-primary)] tracking-tight">Multi-Agent Command Center</h2>
           <p className="text-xs text-[var(--text-secondary)]">Monitor and orchestrate autonomous career execution agents.</p>
         </div>
         
         <button 
           onClick={() => setPipelineModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-md transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer active:scale-98"
         >
           <Play className="w-4 h-4" /> Trigger Multi-Agent Pipeline
         </button>
@@ -121,24 +121,24 @@ export function AiAgents() {
           const latestLog = agentLogs[0];
 
           return (
-            <div key={agent.name} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4">
+            <div key={agent.name} className="bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-blue-500/40 rounded-2xl p-5 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between space-y-4">
               <div>
                 <div className="flex items-start justify-between mb-3">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border", agent.bg, agent.color)}>
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center border shadow-2xs", agent.bg, agent.color)}>
                     <agent.icon className="w-5 h-5" />
                   </div>
-                  <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-full text-[11px] font-semibold text-[var(--text-secondary)]">
+                  <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-full text-[11px] font-bold text-[var(--text-secondary)] shadow-2xs">
                     <span className={cn("w-1.5 h-1.5 rounded-full", status.color)}></span>
                     <span>{status.text}</span>
                   </div>
                 </div>
 
-                <h3 className="font-bold text-base text-[var(--text-primary)]">{agent.name}</h3>
+                <h3 className="font-extrabold text-base text-[var(--text-primary)] tracking-tight">{agent.name}</h3>
                 <p className="text-xs text-[var(--text-secondary)] font-medium mb-3">{agent.role}</p>
 
                 {latestLog && (
-                  <div className="text-[11px] bg-[var(--bg-secondary)] p-2.5 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] leading-tight">
-                    <span className="font-semibold text-[var(--text-primary)] block truncate mb-0.5">{latestLog.action}</span>
+                  <div className="text-[11px] bg-[var(--bg-secondary)] p-3 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] leading-tight shadow-2xs">
+                    <span className="font-bold text-[var(--text-primary)] block truncate mb-0.5">{latestLog.action}</span>
                     {latestLog.details && <span className="text-[var(--text-muted)] line-clamp-1">{latestLog.details}</span>}
                   </div>
                 )}
@@ -150,11 +150,11 @@ export function AiAgents() {
 
       {/* Live Activity Stream Table */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl overflow-hidden shadow-xs flex flex-col h-[420px]">
-        <div className="p-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)] flex items-center justify-between">
-          <h3 className="font-bold text-xs uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
-            <Activity className="w-4 h-4 text-blue-500" /> Live Agent Activity Log ({logs.length})
+        <div className="p-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/80 backdrop-blur-xs flex items-center justify-between">
+          <h3 className="font-extrabold text-xs uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
+            <Activity className="w-4 h-4 text-blue-500" /> Live Agent Activity Stream ({logs.length})
           </h3>
-          <span className="text-[10px] text-[var(--text-muted)] font-mono">Auto-refreshes every 4s</span>
+          <span className="text-[10px] text-[var(--text-muted)] font-mono font-medium">Auto-refreshes every 4s</span>
         </div>
 
         <div className="flex-1 p-4 overflow-y-auto space-y-2 font-mono text-xs">
@@ -166,7 +166,7 @@ export function AiAgents() {
             <div className="text-[var(--text-muted)] text-center py-16">No agent activity recorded yet.</div>
           ) : (
             logs.map(log => (
-              <div key={log.id} className="p-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-blue-500/30 rounded-xl transition-colors flex items-start gap-3">
+              <div key={log.id} className="p-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-blue-500/30 rounded-xl transition-all flex items-start gap-3 shadow-2xs">
                 <span className="text-[var(--text-muted)] shrink-0 text-[11px]">
                   {new Date(log.created_at).toLocaleTimeString()}
                 </span>
@@ -178,7 +178,7 @@ export function AiAgents() {
                   [{log.agent_name}]
                 </span>
                 <div className="flex-1 min-w-0">
-                  <span className="text-[var(--text-primary)] font-sans font-medium">{log.action}</span>
+                  <span className="text-[var(--text-primary)] font-sans font-semibold">{log.action}</span>
                   {log.details && (
                     <span className="text-[var(--text-muted)] block text-[11px] font-sans mt-0.5 truncate">{log.details}</span>
                   )}
@@ -197,7 +197,7 @@ export function AiAgents() {
               <h3 className="text-base font-bold text-[var(--text-primary)] flex items-center gap-2">
                 <Layers className="w-5 h-5 text-blue-500" /> Run Multi-Agent Pipeline
               </h3>
-              <button onClick={() => setPipelineModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+              <button onClick={() => setPipelineModalOpen(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -209,7 +209,7 @@ export function AiAgents() {
                   type="text" 
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500"
                   required
                 />
               </div>
@@ -221,7 +221,7 @@ export function AiAgents() {
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   placeholder="e.g. Bangalore, Remote"
-                  className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -268,7 +268,7 @@ export function AiAgents() {
               <button
                 type="submit"
                 disabled={triggering}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl text-xs transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer active:scale-98"
               >
                 {triggering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
                 {triggering ? "Executing Pipeline..." : "Execute 5-Agent Pipeline"}

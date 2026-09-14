@@ -118,7 +118,7 @@ export function Jobs() {
             placeholder="Search roles, skills, or companies..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-blue-500/50 shadow-xs"
+            className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl py-2.5 pl-10 pr-4 text-sm text-[var(--text-primary)] focus:outline-none focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20 shadow-xs transition-all"
           />
         </div>
 
@@ -126,19 +126,19 @@ export function Jobs() {
           <button 
             onClick={() => setFilterSavedOnly(!filterSavedOnly)}
             className={cn(
-              "px-3.5 py-2 rounded-xl text-xs font-semibold border flex items-center gap-2 transition-all",
+              "px-4 py-2.5 rounded-xl text-xs font-bold border flex items-center gap-2 transition-all cursor-pointer",
               filterSavedOnly 
-                ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400" 
+                ? "bg-blue-600/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-xs" 
                 : "bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
             )}
           >
             <Bookmark className="w-4 h-4" />
-            Saved ({jobs.filter(j => j.is_saved).length})
+            Saved Jobs ({jobs.filter(j => j.is_saved).length})
           </button>
 
           <button 
             onClick={() => setSearchModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-md transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer active:scale-98"
           >
             <Plus className="w-4 h-4" />
             Discover New Jobs
@@ -154,9 +154,9 @@ export function Jobs() {
           ))}
         </div>
       ) : displayedJobs.length === 0 ? (
-        <div className="text-center py-16 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-8">
+        <div className="text-center py-16 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-8 shadow-xs">
           <Building className="w-12 h-12 text-[var(--text-muted)] mx-auto mb-3" />
-          <h3 className="text-base font-bold text-[var(--text-primary)] mb-1">No jobs found</h3>
+          <h3 className="text-base font-extrabold text-[var(--text-primary)] mb-1">No jobs found</h3>
           <p className="text-xs text-[var(--text-secondary)] mb-6 max-w-sm mx-auto">
             {filterSavedOnly 
               ? "You haven't saved any jobs yet." 
@@ -164,7 +164,7 @@ export function Jobs() {
           </p>
           <button 
             onClick={() => setSearchModalOpen(true)}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-md transition-all inline-flex items-center gap-2"
+            className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-md transition-all inline-flex items-center gap-2 cursor-pointer active:scale-98"
           >
             <Sparkles className="w-4 h-4" /> Discover Jobs Now
           </button>
@@ -172,13 +172,13 @@ export function Jobs() {
       ) : (
         <div className="grid gap-4">
           {displayedJobs.map(job => (
-            <div key={job.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-blue-500/40 rounded-2xl p-5 transition-all shadow-xs flex flex-col md:flex-row gap-5">
+            <div key={job.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-blue-500/40 rounded-2xl p-5 transition-all duration-200 shadow-xs hover:shadow-md hover:-translate-y-0.5 flex flex-col md:flex-row gap-5">
               <div className="flex-1">
                 <div className="flex justify-between items-start mb-1.5">
-                  <h3 className="text-lg font-bold text-[var(--text-primary)] hover:text-blue-600 transition-colors">{job.title}</h3>
+                  <h3 className="text-lg font-extrabold text-[var(--text-primary)] hover:text-blue-600 dark:hover:text-blue-400 transition-colors tracking-tight">{job.title}</h3>
                   <button 
                     onClick={() => toggleSave(job.id)} 
-                    className="text-[var(--text-muted)] hover:text-blue-500 transition-colors p-1"
+                    className="text-[var(--text-muted)] hover:text-blue-500 transition-colors p-1.5 rounded-lg hover:bg-[var(--bg-hover)] cursor-pointer"
                     title={job.is_saved ? "Remove from saved" : "Save job"}
                   >
                     {job.is_saved ? <BookmarkCheck className="w-5 h-5 text-blue-500" /> : <Bookmark className="w-5 h-5" />}
@@ -186,13 +186,13 @@ export function Jobs() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[var(--text-secondary)] mb-3">
-                  <span className="flex items-center gap-1.5 font-medium text-[var(--text-primary)]">
+                  <span className="flex items-center gap-1.5 font-bold text-[var(--text-primary)]">
                     <Building className="w-3.5 h-3.5 text-blue-500" /> {job.company}
                   </span>
                   <span className="flex items-center gap-1">
                     <MapPin className="w-3.5 h-3.5 text-[var(--text-muted)]" /> {job.location || 'Remote'}
                   </span>
-                  {job.salary && <span className="font-semibold text-emerald-600 dark:text-emerald-400">{job.salary}</span>}
+                  {job.salary && <span className="font-extrabold text-emerald-600 dark:text-emerald-400">{job.salary}</span>}
                 </div>
 
                 <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-4 leading-relaxed">
@@ -201,15 +201,15 @@ export function Jobs() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <span className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-bold border",
-                    job.ats_score >= 80 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" :
-                    job.ats_score >= 60 ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" :
-                    job.ats_score >= 40 ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20" :
+                    "px-2.5 py-1 rounded-lg text-xs font-extrabold border shadow-2xs",
+                    job.ats_score >= 80 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25" :
+                    job.ats_score >= 60 ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25" :
+                    job.ats_score >= 40 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25" :
                     "bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20"
                   )}>
                     {job.ats_score > 0 ? `${Math.round(job.ats_score)}% ATS Match` : "Unscored"}
                   </span>
-                  <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-color)]">
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-[var(--bg-hover)] text-[var(--text-secondary)] border border-[var(--border-color)]">
                     Source: {job.source}
                   </span>
                 </div>
@@ -219,23 +219,23 @@ export function Jobs() {
               <div className="flex md:flex-col justify-end gap-2 shrink-0 md:border-l md:border-[var(--border-color)] md:pl-5 pt-3 md:pt-0 border-t md:border-t-0">
                 <Link
                   to="/matcher"
-                  className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/25 rounded-xl text-xs font-bold transition-all active:scale-98"
                 >
                   <Target className="w-3.5 h-3.5" /> Match JD
                 </Link>
 
                 <Link
                   to="/cover-letters"
-                  className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/20 rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-violet-500/10 hover:bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/25 rounded-xl text-xs font-bold transition-all active:scale-98"
                 >
                   <Mail className="w-3.5 h-3.5" /> Cover Letter
                 </Link>
 
                 <button
                   onClick={() => handleTrackApplication(job.id)}
-                  className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 bg-[var(--bg-hover)] hover:bg-[var(--border-color)] text-[var(--text-primary)] rounded-xl text-xs font-semibold transition-colors"
+                  className="flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-[var(--bg-hover)] hover:bg-[var(--border-color)] text-[var(--text-primary)] rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-98"
                 >
-                  <CheckCircle className="w-3.5 h-3.5" /> Track
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> Track
                 </button>
 
                 {job.url && (
