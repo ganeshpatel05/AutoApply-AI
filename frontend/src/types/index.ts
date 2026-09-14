@@ -118,6 +118,39 @@ export interface OllamaStatus {
   installed_models: string[];
 }
 
+export interface CoverLetterMatchSummary {
+  score: number;
+  recommendation: string;
+  strong_matches: string[];
+  partial_matches: string[];
+  transferable_skills: string[];
+  missing_skills: string[];
+  selected_projects: Array<{
+    title: string;
+    description: string;
+    tech: string[];
+  }>;
+}
+
+export interface CoverLetterResponseData {
+  content: string;
+  used_ai: boolean;
+  model: string;
+  error?: string;
+  match_summary?: CoverLetterMatchSummary;
+  candidate_info?: {
+    name: string;
+    skills_count: number;
+    resume_analyzed: boolean;
+  };
+  job_info?: {
+    id: number;
+    title: string;
+    company: string;
+    location: string;
+  };
+}
+
 export interface SystemStatus {
   api: string;
   database: {
@@ -131,3 +164,4 @@ export interface SystemStatus {
     sender: string | null;
   };
 }
+

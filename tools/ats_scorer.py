@@ -305,3 +305,46 @@ class ATSScorer:
         scored = [self._score_with_cache(cache, job) for job in jobs]
         scored.sort(key=lambda x: x["ats_score"], reverse=True)
         return scored
+
+    def analyze_match(self, resume_data: dict, job: dict) -> dict:
+        """
+        Perform detailed 4-category match analysis between resume and job description.
+        """
+        from tools.resume_parser import ResumeParser
+        parser = ResumeParser()
+        profile = parser.get_structured_profile(resume_data) if isinstance(resume_data, dict) else parser.parse_text(str(resume_data))
+
+        jd_text = job.get("description", job.get("jd_text", "")) or job.get("title", "")
+        ats_res = self.score(resume_data, jd_text)
+
+        jd_kws = self._extract_keywords(jd_text)
+        cand_skills = set(s.lower() for s in profile.get("skills", []))
+
+        strong_matches = [s for s in profile.get("skills", []) if s.lower() in jd_kws]
+        jd_tech = jd_kws & self.tech_keywords
+        missing_skills = sorted(list(jd_tech - cand_skills))[:8]
+
+        soft_keywords = {"agile", "api", "rest", "problem solving", "communication", "testing", "debugging", "teamwork", "git", "ci/cd", "system architecture", "database management", "cloud"}
+        transferable = [s for s in profile.get("skills", []) if s.lower() in soft_keywords or (s.lower() in jd_kws and s not in strong_matches)]
+        
+        projects = profile.get("projects", [])
+        scored_projects = []
+        for p in projects:
+            p_text = (p.get("title", "") + " " + p.get("description", "") + " " + " ".join(p.get("tech", []))).lower()
+            p_kws = set(re.findall(r'\w+', p_text))
+            overlap = len(p_kws & jd_kws)
+            scored_projects.append((overlap, p))
+            
+        scored_projects.sort(key=lambda x: x[0], reverse=True)
+        selected_projects = [sp[1] for sp in scored_projects[:2]]
+
+        return {
+            "score": ats_res["score"],
+            "recommendation": ats_res["recommendation"],
+            "strong_matches": strong_matches[:10] if strong_matches else [s.title() for s in profile.get("skills", [])[:5]],
+            "partial_matches": [m.title() for m in ats_res.get("matched_keywords", []) if m.title() not in strong_matches][:6],
+            "transferable_skills": list(dict.fromkeys(transferable))[:6],
+            "missing_skills": [m.title() for m in missing_skills],
+            "selected_projects": selected_projects
+        }
+

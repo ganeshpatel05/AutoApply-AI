@@ -69,6 +69,7 @@ class CoverLetterGenerateRequest(BaseModel):
     job_title: Optional[str] = None
     tone: Optional[str] = "Professional"
     length: Optional[str] = "Standard"
+    variation: Optional[int] = 1
     custom_prompt: Optional[str] = None
 
 class CoverLetterUpdateRequest(BaseModel):

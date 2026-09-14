@@ -207,22 +207,131 @@ class ResumeParser:
         """Return skills as a clean comma-separated string."""
         return ", ".join(resume_data.get("skills", []))
 
+    def _extract_projects(self, text: str) -> list[dict]:
+        """Extract individual projects with name, tech stack, and description."""
+        patterns = [
+            r"(?:key\s+|academic\s+|personal\s+)?projects?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|skills|experience|certifications|certificates|honors|languages|\Z))",
+        ]
+        projects_text = ""
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match and len(match.group(1).strip()) > 15:
+                projects_text = match.group(1).strip()
+                break
+
+        if not projects_text:
+            return []
+
+        raw_chunks = [c.strip() for c in re.split(r'\n(?=[A-Z0-9][\w\s\-\:\.\(\)]+[\:\-]\s*|\n|•|\*|\d+\.)', projects_text) if c.strip()]
+        projects = []
+
+        for chunk in raw_chunks:
+            lines = [l.strip() for l in chunk.split('\n') if l.strip()]
+            if not lines:
+                continue
+            
+            first_line = lines[0]
+            first_line = re.sub(r'^[•\*\-\d\.\s]+', '', first_line).strip()
+            
+            tech_found = self._keyword_pattern.findall(chunk.lower())
+            tech_clean = list(set([t.title() for t in tech_found]))
+            
+            if ':' in first_line:
+                parts = first_line.split(':', 1)
+                title = parts[0].strip()
+                desc = parts[1].strip() + (" " + " ".join(lines[1:]) if len(lines) > 1 else "")
+            else:
+                title = first_line[:60]
+                desc = " ".join(lines[1:]) if len(lines) > 1 else first_line
+
+            if len(title) >= 3 and not any(kw in title.lower() for kw in ["education", "skills", "experience"]):
+                projects.append({
+                    "title": title,
+                    "description": desc.strip()[:400],
+                    "tech": tech_clean
+                })
+
+        return projects[:5]
+
+    def _categorize_skills(self, skills: list[str]) -> dict:
+        """Categorize skills into technical domains."""
+        langs = {"java", "python", "javascript", "typescript", "c++", "c#", "php", "ruby", "go", "golang", "rust", "sql", "html", "css", "kotlin", "swift", "r"}
+        frameworks = {"react", "angular", "vue", "node", "nodejs", "node.js", "express", "django", "flask", "fastapi", "spring", "spring boot", "next.js", "nextjs", "redux", "tailwind", "bootstrap"}
+        dbs = {"postgresql", "mysql", "mongodb", "sqlite", "redis", "oracle", "cassandra", "firebase", "dynamodb"}
+        cloud = {"aws", "docker", "kubernetes", "gcp", "azure", "ci/cd", "jenkins", "git", "github", "linux"}
+        
+        result = {
+            "programming_languages": [],
+            "frameworks": [],
+            "databases": [],
+            "cloud_devops": [],
+            "tools_other": []
+        }
+        for s in skills:
+            sl = s.lower()
+            if sl in langs:
+                result["programming_languages"].append(s)
+            elif sl in frameworks:
+                result["frameworks"].append(s)
+            elif sl in dbs:
+                result["databases"].append(s)
+            elif sl in cloud:
+                result["cloud_devops"].append(s)
+            else:
+                result["tools_other"].append(s)
+        return result
+
+    def get_structured_profile(self, resume_data: dict) -> dict:
+        """Construct comprehensive candidate profile without hallucinating missing fields."""
+        raw_text = resume_data.get("raw_text", "")
+        name = resume_data.get("name", "")
+        if not name or name.lower() == "candidate":
+            name = self._extract_name(raw_text)
+            
+        skills = resume_data.get("skills", [])
+        if not skills and raw_text:
+            skills = self._extract_skills(raw_text)
+            
+        experience = resume_data.get("experience", "")
+        if not experience and raw_text:
+            experience = self._extract_experience(raw_text)
+            
+        education = resume_data.get("education", "")
+        if not education and raw_text:
+            education = self._extract_education(raw_text)
+            
+        projects = self._extract_projects(raw_text)
+        categorized = self._categorize_skills(skills)
+        
+        return {
+            "name": name if name and name.lower() != "candidate" else "Candidate",
+            "email": resume_data.get("email") or self._extract_email(raw_text),
+            "phone": resume_data.get("phone") or self._extract_phone(raw_text),
+            "skills": skills,
+            "categorized_skills": categorized,
+            "experience": experience,
+            "education": education,
+            "projects": projects,
+            "raw_text": raw_text
+        }
+
     def resume_summary(self, resume_data: dict) -> str:
         """Create a detailed summary string of the resume for LLM input."""
-        exp = resume_data.get('experience', '')
-        edu = resume_data.get('education', '')
-        raw = resume_data.get('raw_text', '')
-        if not exp and raw:
-            exp = raw[:1500]
-        return f"""Candidate Name: {resume_data.get('name', 'Candidate')}
-Email: {resume_data.get('email', 'N/A')}
-Phone: {resume_data.get('phone', 'N/A')}
-Technical & Core Skills: {self.get_skills_text(resume_data)}
+        profile = self.get_structured_profile(resume_data)
+        exp = profile['experience']
+        edu = profile['education']
+        return f"""Candidate Name: {profile['name']}
+Email: {profile['email'] or 'N/A'}
+Phone: {profile['phone'] or 'N/A'}
+Technical Skills: {", ".join(profile['skills'])}
+Categorized Skills: {json.dumps(profile['categorized_skills'])}
+Projects: {json.dumps(profile['projects'])}
 
-Work & Project Experience:
+Work & Experience:
 {exp[:2500]}
 
-Education & Background:
+Education:
 {edu[:1000]}""".strip()
+
 
 
