@@ -109,19 +109,20 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Dynamic Hero Section */}
-      <div className="relative rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-700 to-violet-800 p-6 md:p-8 overflow-hidden shadow-lg text-white">
-        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="relative rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-6 md:p-9 overflow-hidden shadow-xl text-white">
+        <div className="absolute top-0 right-0 -mt-16 -mr-16 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-1/3 -mb-16 w-64 h-64 bg-violet-400/20 rounded-full blur-2xl pointer-events-none"></div>
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-semibold mb-4 border border-white/20">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white/15 backdrop-blur-md rounded-full text-xs font-semibold mb-4 border border-white/20 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>AI Career Command Center</span>
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-extrabold mb-2 tracking-tight">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-3 tracking-tight leading-tight">
             {activeResume ? `Welcome back, ${activeResume.name.split(' ')[0]}!` : "Welcome to AutoApply AI"}
           </h1>
 
-          <p className="text-blue-100 text-sm md:text-base mb-6 leading-relaxed">
+          <p className="text-blue-100 text-sm md:text-base mb-6 leading-relaxed opacity-95">
             {activeResume 
               ? `Your active resume profile is synced. You have ${stats?.totalJobs || 0} jobs discovered and ${stats?.applications || 0} applications tracked in your pipeline.`
               : "Upload your resume to activate multi-agent job discovery, ATS scoring, and personalized AI cover letter generation."}
@@ -131,7 +132,7 @@ export function Dashboard() {
             {!activeResume ? (
               <Link 
                 to="/resume" 
-                className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 rounded-xl font-semibold text-sm transition-all shadow-md hover:scale-102"
+                className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 rounded-xl font-bold text-sm transition-all shadow-md hover:scale-102 active:scale-98"
               >
                 <Upload className="w-4 h-4" />
                 Upload Resume First
@@ -140,21 +141,21 @@ export function Dashboard() {
               <>
                 <Link 
                   to="/jobs" 
-                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 rounded-xl font-semibold text-sm transition-all shadow-md hover:scale-102"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white text-blue-700 hover:bg-blue-50 rounded-xl font-bold text-sm transition-all shadow-md hover:scale-102 active:scale-98"
                 >
                   <Briefcase className="w-4 h-4" />
                   Explore Jobs ({stats?.totalJobs || 0})
                 </Link>
                 <Link 
                   to="/matcher" 
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl font-semibold text-sm transition-all backdrop-blur-md border border-white/20"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl font-semibold text-sm transition-all backdrop-blur-md border border-white/25 active:scale-98"
                 >
                   <Target className="w-4 h-4" />
                   Match JD
                 </Link>
                 <Link 
                   to="/agents" 
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl font-semibold text-sm transition-all backdrop-blur-md border border-white/20"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white rounded-xl font-semibold text-sm transition-all backdrop-blur-md border border-white/25 active:scale-98"
                 >
                   <Play className="w-4 h-4" />
                   Run Pipeline
@@ -168,19 +169,19 @@ export function Dashboard() {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((stat, i) => (
-          <div key={i} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-xs hover:border-[var(--border-hover)] transition-all">
+          <div key={i} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-5 shadow-xs hover:shadow-md hover:-translate-y-1 hover:border-[var(--border-hover)] transition-all duration-200">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{stat.name}</span>
-              <div className={cn("p-2 rounded-xl border", stat.bg, stat.color)}>
+              <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{stat.name}</span>
+              <div className={cn("p-2.5 rounded-xl border transition-transform duration-200 group-hover:scale-110", stat.bg, stat.color)}>
                 <stat.icon className="w-5 h-5" />
               </div>
             </div>
             {loading ? (
-              <div className="h-8 w-20 bg-[var(--bg-hover)] rounded animate-pulse"></div>
+              <div className="h-8 w-20 bg-[var(--bg-hover)] rounded-lg animate-pulse"></div>
             ) : (
-              <div className="text-2xl font-extrabold text-[var(--text-primary)] mb-1">{stat.value}</div>
+              <div className="text-2xl lg:text-3xl font-extrabold text-[var(--text-primary)] mb-1 tracking-tight">{stat.value}</div>
             )}
-            <p className="text-xs text-[var(--text-muted)]">{stat.sub}</p>
+            <p className="text-xs text-[var(--text-muted)] font-medium">{stat.sub}</p>
           </div>
         ))}
       </div>
@@ -200,10 +201,10 @@ export function Dashboard() {
         <div className="lg:col-span-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6 shadow-xs flex flex-col">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">Recommended Jobs</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Recommended Jobs</h3>
               <p className="text-xs text-[var(--text-secondary)]">Tailored to your active resume profile</p>
             </div>
-            <Link to="/jobs" className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+            <Link to="/jobs" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
               View All ({stats?.totalJobs || 0}) <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -226,23 +227,23 @@ export function Dashboard() {
           ) : (
             <div className="space-y-3 flex-1">
               {recentJobs.map(job => (
-                <div key={job.id} className="p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-blue-500/40 rounded-xl transition-all flex items-center justify-between gap-4">
+                <div key={job.id} className="p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] hover:border-blue-500/40 rounded-xl transition-all flex items-center justify-between gap-4 hover:shadow-xs">
                   <div className="min-w-0">
-                    <h4 className="font-semibold text-sm text-[var(--text-primary)] truncate">{job.title}</h4>
-                    <p className="text-xs text-[var(--text-secondary)] truncate">{job.company} • {job.location || 'Remote'}</p>
+                    <h4 className="font-bold text-sm text-[var(--text-primary)] truncate">{job.title}</h4>
+                    <p className="text-xs text-[var(--text-secondary)] truncate font-medium">{job.company} • {job.location || 'Remote'}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {job.ats_score > 0 && (
                       <span className={cn(
-                        "px-2.5 py-1 rounded-lg text-xs font-bold border",
-                        job.ats_score >= 80 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" :
-                        job.ats_score >= 60 ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20" :
-                        "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20"
+                        "px-2.5 py-1 rounded-lg text-xs font-extrabold border shadow-2xs",
+                        job.ats_score >= 80 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25" :
+                        job.ats_score >= 60 ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25" :
+                        "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
                       )}>
                         {Math.round(job.ats_score)}% Match
                       </span>
                     )}
-                    <Link to="/matcher" className="p-2 bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-blue-500 rounded-lg transition-colors">
+                    <Link to="/matcher" className="p-2 bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors">
                       <ChevronRight className="w-4 h-4" />
                     </Link>
                   </div>

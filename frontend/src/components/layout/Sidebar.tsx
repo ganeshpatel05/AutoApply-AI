@@ -87,7 +87,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
       <div className="flex-1 overflow-y-auto py-5 px-3 space-y-6">
         {navigationSections.map((section) => (
           <div key={section.title}>
-            <h3 className="px-3 text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1.5">
+            <h3 className="px-3 text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-2">
               {section.title}
             </h3>
             <nav className="space-y-1">
@@ -99,19 +99,22 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
                     to={item.href}
                     onClick={onCloseMobile}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group relative",
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative",
                       isActive 
-                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/20 shadow-sm" 
-                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
+                        ? "bg-blue-600/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/25 shadow-xs" 
+                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] hover:translate-x-0.5"
                     )}
                   >
+                    {isActive && (
+                      <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-blue-600 dark:bg-blue-400"></span>
+                    )}
                     <item.icon className={cn(
                       "w-4 h-4 transition-transform group-hover:scale-110",
-                      isActive ? "text-blue-600 dark:text-blue-400" : "text-[var(--text-muted)]"
+                      isActive ? "text-blue-600 dark:text-blue-400" : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"
                     )} />
                     <span>{item.name}</span>
                     {isActive && (
-                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse"></span>
                     )}
                   </Link>
                 );
@@ -122,13 +125,13 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
       </div>
 
       {/* PWA Mobile App Install Widget in Sidebar */}
-      <div className="p-3 border-t border-[var(--border-color)] bg-[var(--bg-primary)]/50">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-900/40 via-purple-900/30 to-slate-900/50 border border-indigo-500/20 text-xs">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div className="p-3 border-t border-[var(--border-color)] bg-[var(--bg-primary)]/40">
+        <div className="p-3.5 rounded-xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-blue-500/5 border border-indigo-500/20 text-xs shadow-xs">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="font-bold text-[var(--text-primary)]">Android & Mobile Ready</span>
           </div>
-          <p className="text-[11px] text-[var(--text-muted)] leading-tight mb-2">
+          <p className="text-[11px] text-[var(--text-secondary)] leading-snug mb-3">
             Install AutoApply AI on your mobile home screen for 1-tap app access.
           </p>
           <button
@@ -136,7 +139,7 @@ export function Sidebar({ mobileOpen, onCloseMobile }: SidebarProps) {
               if (onCloseMobile) onCloseMobile();
               window.dispatchEvent(new CustomEvent("trigger-pwa-install"));
             }}
-            className="w-full py-1.5 px-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-[11px] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
           >
             <span>📱 Get Mobile App</span>
           </button>
