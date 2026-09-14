@@ -12,6 +12,8 @@ from contextlib import contextmanager
 from config.settings import DB_PATH
 
 
+import os
+
 class DatabaseManager:
     """Manages all SQLite database operations for AutoApply AI."""
     _initialized_paths = set()
@@ -31,12 +33,16 @@ class DatabaseManager:
             )
             self._conn.row_factory = sqlite3.Row
             # Performance pragmas
-            self._conn.execute("PRAGMA journal_mode=WAL")
+            if os.getenv("VERCEL"):
+                self._conn.execute("PRAGMA journal_mode=DELETE")
+            else:
+                self._conn.execute("PRAGMA journal_mode=WAL")
             self._conn.execute("PRAGMA synchronous=NORMAL")
             self._conn.execute("PRAGMA cache_size=-64000")
             self._conn.execute("PRAGMA busy_timeout=10000")
             self._conn.execute("PRAGMA temp_store=MEMORY")
         return self._conn
+
 
     @contextmanager
     def _connect(self):
