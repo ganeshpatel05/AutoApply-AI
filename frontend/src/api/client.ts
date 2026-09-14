@@ -1,4 +1,13 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/$/, "");
+  }
+  // In development mode (localhost) use http://localhost:8000, in production (Vercel) use relative paths ""
+  return import.meta.env.DEV ? "http://localhost:8000" : "";
+};
+
+const API_BASE_URL = getApiBaseUrl();
+
 
 interface ApiOptions extends RequestInit {
   data?: any;
