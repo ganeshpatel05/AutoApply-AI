@@ -254,7 +254,7 @@ class ResumeParser:
         return projects[:5]
 
     def _categorize_skills(self, skills: list[str]) -> dict:
-        """Categorize skills into technical domains."""
+        """Categorize skills into technical domains with null-safety."""
         langs = {"java", "python", "javascript", "typescript", "c++", "c#", "php", "ruby", "go", "golang", "rust", "sql", "html", "css", "kotlin", "swift", "r"}
         frameworks = {"react", "angular", "vue", "node", "nodejs", "node.js", "express", "django", "flask", "fastapi", "spring", "spring boot", "next.js", "nextjs", "redux", "tailwind", "bootstrap"}
         dbs = {"postgresql", "mysql", "mongodb", "sqlite", "redis", "oracle", "cassandra", "firebase", "dynamodb"}
@@ -267,8 +267,11 @@ class ResumeParser:
             "cloud_devops": [],
             "tools_other": []
         }
-        for s in skills:
-            sl = s.lower()
+        safe_skills = skills if isinstance(skills, list) else []
+        for s in safe_skills:
+            if not s or not isinstance(s, str):
+                continue
+            sl = s.lower().strip()
             if sl in langs:
                 result["programming_languages"].append(s)
             elif sl in frameworks:
@@ -282,21 +285,24 @@ class ResumeParser:
         return result
 
     def get_structured_profile(self, resume_data: dict) -> dict:
-        """Construct comprehensive candidate profile without hallucinating missing fields."""
-        raw_text = resume_data.get("raw_text", "")
-        name = resume_data.get("name", "")
+        """Construct comprehensive candidate profile with strict null-safety."""
+        if not isinstance(resume_data, dict):
+            resume_data = {}
+
+        raw_text = (resume_data.get("raw_text") or "").strip()
+        name = (resume_data.get("name") or "").strip()
         if not name or name.lower() == "candidate":
             name = self._extract_name(raw_text)
             
-        skills = resume_data.get("skills", [])
+        skills = resume_data.get("skills") if isinstance(resume_data.get("skills"), list) else []
         if not skills and raw_text:
             skills = self._extract_skills(raw_text)
             
-        experience = resume_data.get("experience", "")
+        experience = (resume_data.get("experience") or "").strip()
         if not experience and raw_text:
             experience = self._extract_experience(raw_text)
             
-        education = resume_data.get("education", "")
+        education = (resume_data.get("education") or "").strip()
         if not education and raw_text:
             education = self._extract_education(raw_text)
             
@@ -305,8 +311,8 @@ class ResumeParser:
         
         return {
             "name": name if name and name.lower() != "candidate" else "Candidate",
-            "email": resume_data.get("email") or self._extract_email(raw_text),
-            "phone": resume_data.get("phone") or self._extract_phone(raw_text),
+            "email": (resume_data.get("email") or self._extract_email(raw_text) or "").strip(),
+            "phone": (resume_data.get("phone") or self._extract_phone(raw_text) or "").strip(),
             "skills": skills,
             "categorized_skills": categorized,
             "experience": experience,

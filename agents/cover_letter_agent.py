@@ -70,27 +70,38 @@ class CoverLetterAgent:
         Returns complete response dictionary including content, match_summary, candidate_info, job_info.
         """
         # 1. Extract Structured Candidate Profile & Job Match Analysis
+        if not isinstance(job, dict):
+            job = {}
+
         profile = self.resume_parser.get_structured_profile(resume_data)
-        candidate_name = profile.get("name", "Candidate")
+        candidate_name = (profile.get("name") or "Candidate").strip()
         if not candidate_name or candidate_name.lower() == "candidate":
             prof = self.db.get_profile()
             if prof and prof.get("full_name"):
-                candidate_name = prof["full_name"]
+                candidate_name = prof["full_name"].strip()
                 profile["name"] = candidate_name
 
-        job_title = job.get("title", "Software Developer").strip()
-        company = job.get("company", "Target Company").strip()
-        jd_text = job.get("description", job.get("jd_text", "")) or ""
+        job_title = (job.get("title") or "Software Developer").strip()
+        company = (job.get("company") or "Target Company").strip()
+        jd_text = (job.get("description") or job.get("jd_text") or "").strip()
 
         match_res = self.ats_scorer.analyze_match(resume_data, job)
 
-        # Build context strings for prompt
-        strong_matches_str = ", ".join(match_res["strong_matches"]) if match_res["strong_matches"] else ", ".join(profile["skills"][:5])
+        # Build context strings for prompt with null safety
+        strong_matches = match_res.get("strong_matches") if isinstance(match_res.get("strong_matches"), list) else []
+        skills = profile.get("skills") if isinstance(profile.get("skills"), list) else []
+        strong_matches_str = ", ".join(str(s) for s in strong_matches) if strong_matches else ", ".join(str(s) for s in skills[:5])
         
+        selected_projects = match_res.get("selected_projects") if isinstance(match_res.get("selected_projects"), list) else []
         projects_formatted = []
-        for p in match_res["selected_projects"]:
-            p_tech = f" (Tech: {', '.join(p.get('tech', []))})" if p.get("tech") else ""
-            projects_formatted.append(f"- Project Title: {p.get('title', 'Project')}{p_tech}\n  Description: {p.get('description', '')}")
+        for p in selected_projects:
+            if not isinstance(p, dict):
+                continue
+            title = (p.get("title") or "Project").strip()
+            desc = (p.get("description") or "").strip()
+            tech = p.get("tech") if isinstance(p.get("tech"), list) else []
+            p_tech = f" (Tech: {', '.join(str(t) for t in tech)})" if tech else ""
+            projects_formatted.append(f"- Project Title: {title}{p_tech}\n  Description: {desc}")
         projects_str = "\n".join(projects_formatted) if projects_formatted else "No specific projects detailed in resume."
 
         word_count_target = "200-280 words" if length == "Short" else ("380-480 words" if length == "Detailed" else "260-360 words")
@@ -110,12 +121,12 @@ Job Description Overview:
 CANDIDATE PROFILE:
 Candidate Name: {candidate_name}
 Education: {profile.get('education', 'N/A')}
-Top Technical Skills: {", ".join(profile.get('skills', [])[:12])}
+Top Technical Skills: {", ".join(str(s) for s in skills[:12])}
 Strong Skill Matches for Job: {strong_matches_str}
 Selected Relevant Projects:
 {projects_str}
 Experience Summary:
-{profile.get('experience', '')[:1200]}
+{str(profile.get('experience') or '')[:1200]}
 
 WRITING INSTRUCTIONS:
 1. Write specifically for the EXACT job title "{job_title}" at "{company}".
@@ -242,41 +253,47 @@ Return ONLY the final complete cover letter text."""
         variation: int = 1
     ) -> str:
         """Ground-truth rule-based cover letter builder using candidate's actual projects & skills."""
-        name = profile.get("name", "Candidate")
+        if not isinstance(profile, dict):
+            profile = {}
+        if not isinstance(match_res, dict):
+            match_res = {}
+
+        name = (profile.get("name") or "Candidate").strip()
         if not name or name.lower() == "candidate":
             prof = self.db.get_profile()
             if prof and prof.get("full_name"):
-                name = prof["full_name"]
+                name = prof["full_name"].strip()
             else:
                 name = "Applicant"
 
-        education = profile.get("education", "")
+        education = (profile.get("education") or "").strip()
         deg_str = ""
         if education:
             deg_found = re.findall(r'\b(?:MCA|BCA|B\.Tech|M\.Tech|BTech|MTech|B\.Sc|M\.Sc|Bachelor|Master|Computer Science)[^,\.\n]*', education, re.IGNORECASE)
             if deg_found:
                 deg_str = f" with a background in {deg_found[0].strip()}"
 
-        strong_matches = match_res.get("strong_matches", [])
-        top_skills = profile.get("skills", [])[:6]
-        skills_formatted = ", ".join(strong_matches[:4]) if strong_matches else (", ".join(top_skills[:4]) if top_skills else "software engineering")
+        strong_matches = match_res.get("strong_matches") if isinstance(match_res.get("strong_matches"), list) else []
+        top_skills = profile.get("skills") if isinstance(profile.get("skills"), list) else []
+        skills_formatted = ", ".join(str(s) for s in strong_matches[:4]) if strong_matches else (", ".join(str(s) for s in top_skills[:4]) if top_skills else "software engineering")
 
-        selected_projects = match_res.get("selected_projects", [])
+        selected_projects = match_res.get("selected_projects") if isinstance(match_res.get("selected_projects"), list) else []
         project_para = ""
-        if selected_projects:
+        if selected_projects and isinstance(selected_projects[0], dict):
             proj = selected_projects[0]
-            proj_title = proj.get("title", "Software Application")
-            proj_desc = proj.get("description", "").strip()
-            proj_tech = ", ".join(proj.get("tech", []))
+            proj_title = (proj.get("title") or "Software Application").strip()
+            proj_desc = (proj.get("description") or "").strip()
+            proj_tech_list = proj.get("tech") if isinstance(proj.get("tech"), list) else []
+            proj_tech = ", ".join(str(t) for t in proj_tech_list)
             tech_phrase = f" using {proj_tech}" if proj_tech else ""
             if proj_desc:
                 project_para = f"During my work on {proj_title}{tech_phrase}, I led development on key application components. {proj_desc[:220]} This project enabled me to tackle technical challenges and deliver reliable software logic."
             else:
                 project_para = f"In my recent project, {proj_title}{tech_phrase}, I designed and implemented scalable application features. This experience strengthened my ability to build clean code, optimize performance, and adhere to engineering standards."
         else:
-            exp_text = profile.get("experience", "")
+            exp_text = (profile.get("experience") or "").strip()
             if exp_text:
-                clean_exp = exp_text.strip()[:250].rsplit('.', 1)[0] + "."
+                clean_exp = exp_text[:250].rsplit('.', 1)[0] + "."
                 project_para = f"Throughout my software development endeavors, I have focused on writing clean, maintainable code and building end-to-end applications. {clean_exp}"
             else:
                 project_para = f"Throughout my technical background, I have focused on writing scalable code, building RESTful APIs, and implementing database-driven solutions."

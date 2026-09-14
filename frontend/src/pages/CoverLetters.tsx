@@ -325,31 +325,37 @@ export function CoverLetters() {
             </div>
 
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-              {jobs.map(job => (
-                <button
-                  key={job.id}
-                  onClick={() => handleSelectJob(job.id)}
-                  className={cn(
-                    "w-full text-left p-3 rounded-xl transition-all border flex flex-col justify-between gap-1",
-                    selectedJobId === job.id 
-                      ? "bg-violet-500/10 border-violet-500/40 text-violet-600 dark:text-violet-400 font-semibold shadow-2xs" 
-                      : "bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-violet-500/20"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="font-bold text-xs text-[var(--text-primary)] truncate">{job.title}</div>
-                    {job.ats_score > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-500 font-mono font-bold">
-                        {Math.round(job.ats_score)}%
-                      </span>
+              {jobs.length === 0 ? (
+                <div className="p-4 text-center text-xs text-[var(--text-muted)] bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
+                  No pipeline jobs found. Scrape or save jobs in the Jobs tab to select them here.
+                </div>
+              ) : (
+                jobs.map(job => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleSelectJob(job.id)}
+                    className={cn(
+                      "w-full text-left p-3 rounded-xl transition-all border flex flex-col justify-between gap-1",
+                      selectedJobId === job.id 
+                        ? "bg-violet-500/10 border-violet-500/40 text-violet-600 dark:text-violet-400 font-semibold shadow-2xs" 
+                        : "bg-[var(--bg-secondary)] border-[var(--border-color)] text-[var(--text-secondary)] hover:border-violet-500/20"
                     )}
-                  </div>
-                  <div className="text-[11px] text-[var(--text-muted)] flex items-center justify-between">
-                    <span className="truncate">{job.company}</span>
-                    <span className="truncate text-[10px] opacity-75">{job.location || "Remote"}</span>
-                  </div>
-                </button>
-              ))}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-bold text-xs text-[var(--text-primary)] truncate">{job.title}</div>
+                      {job.ats_score > 0 && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-500 font-mono font-bold">
+                          {Math.round(job.ats_score)}%
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-[var(--text-muted)] flex items-center justify-between">
+                      <span className="truncate">{job.company}</span>
+                      <span className="truncate text-[10px] opacity-75">{job.location || "Remote"}</span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
