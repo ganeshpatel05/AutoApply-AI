@@ -26,21 +26,23 @@ class DatabaseManager:
     def _get_conn(self) -> sqlite3.Connection:
         """Get or create a persistent connection with optimized pragmas."""
         if self._conn is None:
-            self._conn = sqlite3.connect(
+            conn = sqlite3.connect(
                 self.db_path,
                 timeout=10,
                 check_same_thread=False
             )
-            self._conn.row_factory = sqlite3.Row
+            conn.row_factory = sqlite3.Row
             # Performance pragmas
             if os.getenv("VERCEL"):
-                self._conn.execute("PRAGMA journal_mode=DELETE")
+                conn.execute("PRAGMA journal_mode=DELETE")
             else:
-                self._conn.execute("PRAGMA journal_mode=WAL")
-            self._conn.execute("PRAGMA synchronous=NORMAL")
-            self._conn.execute("PRAGMA cache_size=-64000")
-            self._conn.execute("PRAGMA busy_timeout=10000")
-            self._conn.execute("PRAGMA temp_store=MEMORY")
+                conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute("PRAGMA cache_size=-64000")
+            conn.execute("PRAGMA busy_timeout=10000")
+            conn.execute("PRAGMA temp_store=MEMORY")
+            self._conn = conn
+            self.init_db()
         return self._conn
 
 
