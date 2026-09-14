@@ -83,15 +83,37 @@ class ResumeParser:
     # ─── Field Extractors ─────────────────────────────────────────────
 
     def _extract_name(self, text: str) -> str:
-        """Extract candidate name (usually the first non-empty line)."""
+        """Extract and title-case candidate name accurately."""
         lines = [l.strip() for l in text.split("\n") if l.strip()]
         for line in lines[:5]:
-            # Skip lines that look like titles/headers
-            if len(line.split()) <= 5 and not any(
-                kw in line.lower() for kw in
-                ["resume", "cv", "curriculum", "profile", "@", "phone", "email"]
-            ):
-                return line
+            clean_line = re.sub(r'[\w\.-]+@[\w\.-]+', '', line)
+            clean_line = re.sub(r'(?:https?://)?(?:www\.)?(?:linkedin|github)\.com\S*', '', clean_line, flags=re.IGNORECASE)
+            clean_line = re.sub(r'[\+\d\-\(\)\s]{8,}', '', clean_line)
+            clean_line = re.sub(r'\b(?:resume|cv|curriculum|vitae|profile|summary|contact|email|phone)\b', '', clean_line, flags=re.IGNORECASE).strip()
+            
+            words = clean_line.split()
+            if 1 <= len(words) <= 4:
+                title_keywords = {"software", "developer", "engineer", "full", "stack", "java", "python", "backend", "frontend", "web", "data", "intern", "manager", "lead", "senior", "junior"}
+                if not any(w.lower() in title_keywords for w in words):
+                    name = " ".join(words).title()
+                    if len(name) >= 3:
+                        return name
+
+        first_chunk = text[:300]
+        first_chunk = re.sub(r'[\w\.-]+@[\w\.-]+', '', first_chunk)
+        first_chunk = re.sub(r'(?:https?://)?(?:www\.)?(?:linkedin|github)\.com\S*', '', first_chunk, flags=re.IGNORECASE)
+        first_chunk = re.sub(r'[\+\d\-\(\)\s]{8,}', '', first_chunk)
+        
+        split_pattern = r'\b(?:Software|Developer|Java|Full|Stack|Engineer|Web|Data|Python|Backend|Frontend|Indore|Mumbai|Delhi|Bangalore|Pune|Hyderabad|India|USA|UK|PROFESSIONAL|SUMMARY|OBJECTIVE|EXPERIENCE|EDUCATION)\b'
+        match = re.search(split_pattern, first_chunk, re.IGNORECASE)
+        if match:
+            name_part = first_chunk[:match.start()].strip()
+            words = name_part.split()
+            if 1 <= len(words) <= 4:
+                name = " ".join(words).title()
+                if len(name) >= 3:
+                    return name
+                    
         return "Candidate"
 
     def _extract_email(self, text: str) -> str:
@@ -104,16 +126,15 @@ class ResumeParser:
         return phones[0] if phones else ""
 
     def _extract_skills(self, text: str) -> list[str]:
-        """Extract technical skills by matching against known keyword list."""
+        """Extract clean technical skills without section category labels."""
         text_lower = text.lower()
         found = []
 
-        # Look for skills section
         skills_section = ""
         patterns = [
-            r"(?:technical\s+)?skills?\s*[:\-]?\s*(.*?)(?=\n\n|\Z)",
-            r"core\s+competencies?\s*[:\-]?\s*(.*?)(?=\n\n|\Z)",
-            r"technologies?\s*[:\-]?\s*(.*?)(?=\n\n|\Z)",
+            r"(?:technical\s+)?skills?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|experience|projects|academic|\n)|\Z)",
+            r"core\s+competencies?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|experience|projects|\n)|\Z)",
+            r"technologies?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|experience|projects|\n)|\Z)",
         ]
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
@@ -122,45 +143,56 @@ class ResumeParser:
                 break
 
         search_text = (skills_section or text_lower)
-
-        # Single compiled regex pass instead of 65+ individual re.search calls
         found = list(set(self._keyword_pattern.findall(search_text)))
 
-        # Also extract comma/slash-separated words from skills section
         if skills_section:
             raw_skills = re.split(r'[,\|/\n•\-]', skills_section)
             for s in raw_skills:
                 s = s.strip()
-                if 2 <= len(s) <= 30 and s not in found:
+                if ':' in s:
+                    s = s.split(':')[-1].strip()
+                if 2 <= len(s) <= 35 and s not in found:
                     found.append(s)
 
-        return list(dict.fromkeys(found))[:30]  # Deduplicate, max 30
+        cleaned = []
+        for item in found:
+            if ':' in item:
+                item = item.split(':')[-1].strip()
+            item_clean = item.strip().title()
+            if len(item_clean) >= 2 and item_clean not in cleaned:
+                cleaned.append(item_clean)
+
+        return cleaned[:30]
 
     def _extract_experience(self, text: str) -> str:
         """Extract experience and key project section text."""
         patterns = [
+            r"(?:professional\s+|career\s+)?summary\s*[:\-]?\s*(.*?)(?=\n\s*(?:technical\s+skills|skills|education|projects|academic|certifications)|\Z)",
             r"(?:professional\s+|work\s+|employment\s+|career\s+|relevant\s+)?(?:experience|history|employment)\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|skills|projects|certifications|certificates|honors|publications|languages)|\Z)",
-            r"(?:key\s+)?projects?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|skills|certifications|certificates|honors|languages)|\Z)"
+            r"(?:key\s+)?projects?\s*[:\-]?\s*(.*?)(?=\n\s*(?:education|skills|certifications|certificates|honors|languages|\Z))"
         ]
         extracted = []
         for pattern in patterns:
             match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-            if match and match.group(1).strip():
+            if match and len(match.group(1).strip()) > 20:
                 extracted.append(match.group(1).strip())
         
         if extracted:
             combined = "\n\n".join(extracted)
             return combined[:3000]
         
-        # Fallback: return clean text excerpt if no section header is matched
         return text[:2000].strip()
 
     def _extract_education(self, text: str) -> str:
         """Extract education section text."""
-        pattern = r"(?:education|academic\s+background|academic\s+qualifications|qualifications|education\s+&\s+training)\s*[:\-]?\s*(.*?)(?=\n\s*(?:experience|skills|projects|certifications|certificates|honors|publications|languages|\Z))"
+        pattern = r"(?:education|academic\s+qualifications|academic\s+background|qualifications|education\s+&\s+training)\s*[:\-]?\s*(.*?)(?=\n\s*(?:experience|skills|projects|certifications|summary|\Z))"
         match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
-        if match:
+        if match and len(match.group(1).strip()) > 10:
             return match.group(1).strip()[:1500]
+            
+        degrees = re.findall(r'(?:bachelor|master|bca|mca|b\.tech|m\.tech|btech|mtech|b\.sc|m\.sc|diploma)[^.\n]+', text, re.IGNORECASE)
+        if degrees:
+            return " | ".join([d.strip() for d in degrees[:4]])
         return ""
 
     def _extract_linkedin(self, text: str) -> str:
@@ -172,7 +204,7 @@ class ResumeParser:
         return f"https://{match.group(0)}" if match else ""
 
     def get_skills_text(self, resume_data: dict) -> str:
-        """Return skills as a comma-separated string."""
+        """Return skills as a clean comma-separated string."""
         return ", ".join(resume_data.get("skills", []))
 
     def resume_summary(self, resume_data: dict) -> str:
@@ -192,4 +224,5 @@ Work & Project Experience:
 
 Education & Background:
 {edu[:1000]}""".strip()
+
 
