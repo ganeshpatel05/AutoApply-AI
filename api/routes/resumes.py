@@ -5,9 +5,14 @@ from tools.resume_parser import ResumeParser
 import os
 import shutil
 
+from api.schemas.models import ResumeGenerateRequest
+from agents.resume_agent import ResumeAgent
+
 router = APIRouter(prefix="/api/resumes", tags=["resumes"])
 db = DatabaseManager()
 parser = ResumeParser()
+resume_agent = ResumeAgent(db)
+
 
 
 def _process_resume_upload(content: bytes, filename: str) -> dict:
@@ -89,3 +94,12 @@ def get_all_resumes():
         return {"success": True, "resumes": resumes}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/generate")
+def generate_resume(req: ResumeGenerateRequest):
+    try:
+        result = resume_agent.generate_resume_from_details(req.model_dump())
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

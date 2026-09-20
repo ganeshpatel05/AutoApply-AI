@@ -21,6 +21,8 @@ export interface Job {
   source: string;
   salary?: string;
   job_type?: string;
+  company_type?: string;
+  is_mnc?: boolean;
   experience?: string;
   ats_score: number;
   matched_keywords: string[];
@@ -39,6 +41,7 @@ export interface Resume {
   education: string;
   linkedin: string;
   github: string;
+  raw_text?: string;
   is_active: number;
   created_at: string;
 }
@@ -109,6 +112,8 @@ export interface MatchResult {
   breakdown?: Record<string, number>;
   job_title?: string;
   company?: string;
+  company_type?: string;
+  is_mnc?: boolean;
 }
 
 export interface OllamaStatus {
@@ -164,4 +169,20 @@ export interface SystemStatus {
     sender: string | null;
   };
 }
+
+export interface ResumeGenerateInput {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+  github: string;
+  summary: string;
+  skills: string[];
+  experience: string;
+  projects: string;
+  education: string;
+  enhance_with_ai: boolean;
+}
+
 

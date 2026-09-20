@@ -14,7 +14,8 @@ import {
   Briefcase,
   Layers,
   Award,
-  FileCheck
+  FileCheck,
+  Globe
 } from "lucide-react";
 import { cn } from "../utils/cn";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,8 @@ export function JdMatcher() {
   const [jobMode, setJobMode] = useState<"custom" | "pipeline">("custom");
   const [jobTitle, setJobTitle] = useState("");
   const [company, setCompany] = useState("");
+  const [companyType, setCompanyType] = useState("MNC (Multi National Company)");
+  const [isMnc, setIsMnc] = useState(true);
   const [jdText, setJdText] = useState("");
   const [pipelineJobs, setPipelineJobs] = useState<Job[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
@@ -153,6 +156,8 @@ export function JdMatcher() {
         jd_text: finalJd,
         job_title: finalTitle,
         company: finalCompany,
+        company_type: companyType,
+        is_mnc: isMnc,
         resume_text: payloadResumeText,
         resume_id: payloadResumeId
       });
@@ -434,6 +439,47 @@ export function JdMatcher() {
                   </div>
                 </div>
 
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-[var(--text-secondary)] mb-1 block">Company Type / MNC Category</label>
+                    <select
+                      value={companyType}
+                      onChange={(e) => {
+                        setCompanyType(e.target.value);
+                        if (e.target.value.includes("MNC")) setIsMnc(true);
+                      }}
+                      className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="MNC (Multi National Company)">🏢 MNC (Multi National Company)</option>
+                      <option value="Product-Based MNC">🚀 Product-Based MNC</option>
+                      <option value="Service-Based MNC">⚙️ Service-Based MNC</option>
+                      <option value="Startup">⚡ Startup / High Growth</option>
+                      <option value="Corporate / Enterprise">🏛️ Corporate / Enterprise</option>
+                      <option value="Public Sector / Govt">🏛️ Public Sector / Govt</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-[var(--text-secondary)] mb-1 block">MNC Status</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsMnc(!isMnc)}
+                      className={cn(
+                        "w-full py-2 px-3.5 rounded-xl border text-xs font-semibold transition-all flex items-center justify-between",
+                        isMnc
+                          ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400"
+                          : "bg-[var(--bg-input)] border-[var(--border-color)] text-[var(--text-muted)]"
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Globe className="w-3.5 h-3.5 text-blue-500" /> Multi National Company (MNC)
+                      </span>
+                      <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-bold", isMnc ? "bg-blue-500 text-white" : "bg-gray-500/20 text-gray-400")}>
+                        {isMnc ? "YES (MNC)" : "NO"}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-xs font-semibold text-[var(--text-secondary)] mb-1 block">Job Description & Requirements *</label>
                   <textarea 
@@ -472,9 +518,12 @@ export function JdMatcher() {
                           <div className="font-bold text-[var(--text-primary)] truncate">{j.title}</div>
                           <div className="text-[11px] text-[var(--text-muted)] truncate">{j.company} • {j.location}</div>
                         </div>
-                        <div className="shrink-0 text-right">
+                        <div className="shrink-0 text-right flex flex-col items-end gap-1">
                           <span className="text-[10px] font-bold text-violet-500 bg-violet-500/10 px-2 py-0.5 rounded-full">
                             {j.source}
+                          </span>
+                          <span className="text-[9px] font-semibold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
+                            <Globe className="w-2.5 h-2.5 text-blue-500" /> MNC
                           </span>
                         </div>
                       </button>
@@ -537,6 +586,11 @@ export function JdMatcher() {
                 <span className="text-xs text-[var(--text-muted)]">
                   Job Role: <strong className="text-[var(--text-primary)]">{matchResult.job_title}</strong> @ {matchResult.company}
                 </span>
+                {(matchResult.is_mnc || matchResult.company_type) && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold">
+                    <Globe className="w-3 h-3 text-blue-500" /> {matchResult.company_type || "MNC (Multi National Company)"}
+                  </span>
+                )}
               </div>
 
               <p className="text-xs text-[var(--text-secondary)] leading-relaxed">

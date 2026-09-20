@@ -78,6 +78,8 @@ class DemoJobSource(JobSource):
                 "source_job_id": f"DEMO-{short}-{i+1}",
                 "salary": "₹5.5L - ₹8.5L P.A.",
                 "job_type": "Full-time",
+                "company_type": "MNC (Multi National Company)",
+                "is_mnc": True,
                 "experience": f"{experience} years" if experience != "0" else "0-2 years",
             })
         return jobs

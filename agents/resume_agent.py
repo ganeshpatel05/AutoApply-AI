@@ -148,5 +148,98 @@ Format strictly as bullet points starting with '- '. Keep each suggestion under 
             "total": total
         }
 
+    def generate_resume_from_details(self, details: dict) -> dict:
+        """Generate an ATS-optimized resume from user-provided details and save as active resume."""
+        name = details.get("name") or "Candidate"
+        email = details.get("email") or ""
+        phone = details.get("phone") or ""
+        location = details.get("location") or ""
+        linkedin = details.get("linkedin") or ""
+        github = details.get("github") or ""
+        summary = details.get("summary") or ""
+        skills = details.get("skills") if isinstance(details.get("skills"), list) else []
+        if isinstance(details.get("skills"), str):
+            skills = [s.strip() for s in details.get("skills").split(",") if s.strip()]
+        
+        experience = details.get("experience") or ""
+        projects = details.get("projects") or ""
+        education = details.get("education") or ""
+        enhance = details.get("enhance_with_ai", True)
+
+        # Build clean raw text sections
+        header_lines = [name.upper()]
+        contact_parts = [p for p in [email, phone, location, linkedin, github] if p]
+        if contact_parts:
+            header_lines.append(" | ".join(contact_parts))
+        
+        sections = ["\n".join(header_lines)]
+
+        if summary:
+            sections.append(f"\nPROFESSIONAL SUMMARY\n{summary}")
+
+        if skills:
+            sections.append(f"\nTECHNICAL SKILLS\n" + ", ".join(skills))
+
+        if experience:
+            sections.append(f"\nPROFESSIONAL EXPERIENCE\n{experience}")
+
+        if projects:
+            sections.append(f"\nKEY PROJECTS\n{projects}")
+
+        if education:
+            sections.append(f"\nEDUCATION & BACKGROUND\n{education}")
+
+        raw_text = "\n\n".join(sections)
+
+        # AI Enhancement if enabled and available
+        if enhance and self.ollama.is_available():
+            ai_res = self.ollama.generate(
+                prompt=f"""You are an expert ATS resume writer. Polish the following resume text into a highly professional, high-impact resume format with clear section headings, active action verbs, and quantifiable bullet points where applicable. Keep all factual details (Name, Contact, Education, Skills, Experience) intact.
+
+Resume Input:
+{raw_text}
+
+Output the polished ATS resume directly without conversational commentary.""",
+                system_prompt="You are a professional ATS resume writer."
+            )
+            if ai_res.get("success") and ai_res.get("text"):
+                raw_text = ai_res["text"].strip()
+
+        # Combine experience and projects into experience field if projects present
+        full_exp = experience
+        if projects:
+            full_exp = f"{experience}\n\nKey Projects:\n{projects}".strip() if experience else projects
+
+        resume_id = self.db.save_resume(
+            name=name,
+            email=email,
+            phone=phone,
+            file_path="",
+            raw_text=raw_text,
+            skills=skills,
+            experience=full_exp,
+            education=education,
+            linkedin=linkedin,
+            github=github
+        )
+
+        self.db.log_agent_activity(
+            "ResumeMind",
+            f"Generated resume for '{name}'",
+            "Completed",
+            f"Included {len(skills)} skills and {len(full_exp)} chars of experience/projects"
+        )
+
+        active_resume = self.db.get_active_resume()
+        score = self.score_resume(active_resume or {"raw_text": raw_text, "skills": skills, "experience": full_exp, "education": education, "email": email, "phone": phone, "linkedin": linkedin, "github": github})
+
+        return {
+            "success": True,
+            "resume_id": resume_id,
+            "resume": active_resume,
+            "score": score
+        }
+
+
 
 

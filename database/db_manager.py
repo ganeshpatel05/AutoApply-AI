@@ -6,6 +6,7 @@ Performance-optimized: persistent connection, WAL mode, batch operations, consol
 import sqlite3
 import json
 import hashlib
+import threading
 from datetime import datetime
 from pathlib import Path
 from contextlib import contextmanager
@@ -17,6 +18,7 @@ import os
 class DatabaseManager:
     """Manages all SQLite database operations for AutoApply AI."""
     _initialized_paths = set()
+    _db_lock = threading.RLock()
 
     def __init__(self, db_path: str = None):
         self.db_path = str(db_path or DB_PATH)
@@ -48,13 +50,17 @@ class DatabaseManager:
 
     @contextmanager
     def _connect(self):
-        conn = self._get_conn()
-        try:
-            yield conn
-            conn.commit()
-        except Exception:
-            conn.rollback()
-            raise
+        with DatabaseManager._db_lock:
+            conn = self._get_conn()
+            if conn.in_transaction:
+                yield conn
+            else:
+                try:
+                    yield conn
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
 
     # ─── Schema Initialization ────────────────────────────────────────
 
@@ -114,6 +120,8 @@ class DatabaseManager:
                     job_hash            TEXT UNIQUE,
                     salary              TEXT,
                     job_type            TEXT,
+                    company_type        TEXT DEFAULT 'MNC (Multi National Company)',
+                    is_mnc              INTEGER DEFAULT 1,
                     experience          TEXT,
                     ats_score           REAL DEFAULT 0,
                     matched_keywords    TEXT,
@@ -169,6 +177,17 @@ class DatabaseManager:
                 -- Performance: index for stats aggregation
                 CREATE INDEX IF NOT EXISTS idx_apps_email_sent ON applications(email_sent);
             """)
+
+            # Migration for existing databases
+            try:
+                conn.execute("ALTER TABLE jobs ADD COLUMN company_type TEXT DEFAULT 'MNC (Multi National Company)'")
+            except Exception:
+                pass
+            try:
+                conn.execute("ALTER TABLE jobs ADD COLUMN is_mnc INTEGER DEFAULT 1")
+            except Exception:
+                pass
+
         DatabaseManager._initialized_paths.add(resolved)
 
     def reset_db(self):

@@ -45,7 +45,7 @@ export function Settings() {
       }
     } catch (err: any) {
       alert(err.message || "Failed to switch model");
-    } fontally: {
+    } finally {
       setSwitchingModel(false);
     }
   };
@@ -193,7 +193,7 @@ export function Settings() {
             <label className="block font-semibold text-[var(--text-secondary)] mb-1">Ollama Base URL</label>
             <input 
               type="text" 
-              value={systemStatus?.ollama?.base_url || "http://localhost:11434"}
+              value={systemStatus?.ollama?.base_url || "http://127.0.0.1:11434"}
               className="w-full bg-[var(--bg-input)] border border-[var(--border-color)] rounded-xl px-3.5 py-2 text-xs text-[var(--text-primary)] font-mono"
               disabled
             />

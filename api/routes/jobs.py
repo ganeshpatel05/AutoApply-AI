@@ -73,7 +73,9 @@ def match_custom_jd(req: CustomJdMatchRequest):
             "missing_keywords": res["missing_keywords"],
             "breakdown": res.get("breakdown", {}),
             "job_title": req.job_title,
-            "company": req.company
+            "company": req.company,
+            "company_type": req.company_type or "MNC (Multi National Company)",
+            "is_mnc": req.is_mnc if req.is_mnc is not None else True
         }
         return {"success": True, "match_result": match_result}
     except HTTPException:

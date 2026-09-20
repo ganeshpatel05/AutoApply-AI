@@ -59,6 +59,8 @@ class CustomJdMatchRequest(BaseModel):
     jd_text: str
     job_title: Optional[str] = "Target Role"
     company: Optional[str] = "Target Company"
+    company_type: Optional[str] = "MNC (Multi National Company)"
+    is_mnc: Optional[bool] = True
     resume_text: Optional[str] = None
     resume_id: Optional[int] = None
 
@@ -77,3 +79,18 @@ class CoverLetterUpdateRequest(BaseModel):
 
 class OllamaModelSwitchRequest(BaseModel):
     model: str
+
+class ResumeGenerateRequest(BaseModel):
+    name: str
+    email: Optional[str] = ""
+    phone: Optional[str] = ""
+    location: Optional[str] = ""
+    linkedin: Optional[str] = ""
+    github: Optional[str] = ""
+    summary: Optional[str] = ""
+    skills: Optional[List[str]] = []
+    experience: Optional[str] = ""
+    projects: Optional[str] = ""
+    education: Optional[str] = ""
+    enhance_with_ai: Optional[bool] = True
+

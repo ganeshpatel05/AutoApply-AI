@@ -12,7 +12,7 @@ class OllamaClient:
     """Communicates directly with local Ollama HTTP API."""
 
     def __init__(self, base_url: str = None, model: str = None):
-        self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")).rstrip("/")
+        self.base_url = (base_url or os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")).rstrip("/")
         self.configured_model = model or os.getenv("OLLAMA_MODEL", "")
         self.session = requests.Session()
         self._cached_model = None  # Cache resolved model name
